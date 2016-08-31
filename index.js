@@ -6,27 +6,24 @@ function base_func(x1, y1, x2, y2){
     return dist * Math.log(dist)
 }
 
-
-exports.compile = function(P, Q){
+module.exports = function(P, Q){
     var m = P.length;
 
-    // initialize a big empty array
+    // initialize a big zero matrix
     var A = []
     for(var i = 0; i < m + 3; i++){
-        A[i] = new Array(m + 3)
+        A[i] = []
         for(var j = 0; j < m + 3; j++)
             A[i][j] = 0;
     }
 
-    // top right part of matrix
     for(var i = 0; i < m; i++){
+        // top right part of matrix
         A[0][3 + i] = 1
         A[1][3 + i] = P[i][0]
         A[2][3 + i] = P[i][1]
-    }
 
-    // bottom left part of matrix
-    for(var i = 0; i < m; i++){
+        // bottom left part of matrix
         A[3+i][0] = 1
         A[3+i][1] = P[i][0]
         A[3+i][2] = P[i][1]
@@ -51,20 +48,15 @@ exports.compile = function(P, Q){
             Yc[r] += invA[r][c+3] * Q[c][1]
         }
     }
-    return { Xc: Xc, Yc: Yc, P: P, Q: Q }
-}
 
-
-exports.interpolate = function(R, Px, Py){
-    var Xc = R.Xc,
-        Yc = R.Yc,
-        P = R.P;
-    var Xo = Xc[0] + Xc[1] * Px + Xc[2] * Py, 
-        Yo = Yc[0] + Yc[1] * Px + Yc[2] * Py;
-    for(var r = 0; r < m; r++){
-        var tmp = base_func(Px, Py, P[r][0], P[r][1])
-        Xo += Xc[r + 3] * tmp
-        Yo += Yc[r + 3] * tmp
+    return function(Px, Py){
+        var Xo = Xc[0] + Xc[1] * Px + Xc[2] * Py, 
+            Yo = Yc[0] + Yc[1] * Px + Yc[2] * Py;
+        for(var r = 0; r < m; r++){
+            var tmp = base_func(Px, Py, P[r][0], P[r][1])
+            Xo += Xc[r + 3] * tmp
+            Yo += Yc[r + 3] * tmp
+        }
+        return [Xo, Yo]
     }
-    return [Xo, Yo]
 }
